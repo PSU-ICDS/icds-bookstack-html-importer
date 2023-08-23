@@ -28,91 +28,47 @@ if (!isset($credentials)) {
 	die("Missing `credentials` array; exiting now.");
 }
 
-// API call speed in microseconds (default of 111111 is about 480 calls per minute)
-$api_call_speed = 0; // (333333 is about 180 calls per minute which is Bookstack Default)
+// API call speed in microseconds (default of 333333 is about 480 calls per minute)
+$api_call_speed = 333333; // (111111 is about 180 calls per minute which is Bookstack Default)
 
 //Array to store book id's to be added to Shelf after all imports take place
 $book_ids = array(); 
 
-$temp_title;
 // Enter your credentials for API calls from the credentials.php file
 $europa = new BookStack_Client($credentials['url'], $credentials['id'], $credentials['secret'], true); // needs to be in scope
 
 // Specify the root directory you want to start iterating from
-//$root_directory = readline("Enter path to shelf imports: ");
-$root_directory = "/home/kenny/test";
+$root_directory = readline("Enter path to shelf imports: ");
 
 // Create a shelf beforehand; finish after iterations
 $shelf_name = readline("Enter a shelf name: ");
 $shelf_description = readline("Enter a shelf description: ");
 
 // Set iterate from Main directory(shelf) thru subdirectories(books)
-//$iterator = new RecursiveDirectoryIterator($root_directory); 
-$iterator = new DirectoryIterator($root_directory); 
+$iterator = new RecursiveDirectoryIterator($root_directory); 
+
 // Iterate through directories from specified root directory;
 //	creating books where applicable.
 foreach ($iterator as $path) {
-	echo "Iterator : {$iterator}";
-    $isExit56 = readline("Line 54 foreach (\$iterator as \$path) : {$path} Exit?");  // ERROR CHECKING OUTPUTS REMOVE LATER
-        if ($isExit56 === "y") {
-            exit("You have exited");
-        }
-        else {
-            echo "Moving on...";
-        }																			// ERROR CHECKING END
-
+	
 	// create $temp to hold $path because you cannot use isDOT() on RecursiveDirectoryIterator
 	// so it must temporarily become Directory Iterator to pass thru if statement
-	echo "Var Dump: Path ---     ";
-	var_dump($path);
-
-	//$temp = new DirectoryIterator($path);
-
-	echo "Var Dump: TEMP ---     ";
-	//var_dump($temp);
-	
-	$nothing = readline("Line 66 \$path = new DirectoryIterator(\$path) : {$path}    temp: {\$temp} Exit?");
-	
-	/*
-	$isExit60 = readline("Line 66 \$temp = new DirectoryIterator(\$path) : {$temp} Exit?");  // ERROR CHECKING OUTPUTS REMOVE LATER
-        if ($isExit60 === "y") {
-            exit("You have exited");
-        }
-        else {
-            echo "Moving on...";
-        }																// ERROR CHECKING END
-*/
+	$temp = new DirectoryIterator($path);
+		
 		// if is a directory and is one level in
-		if ($path->isDir() && !$path->isDot() ) {
+		if ($temp->isDir() && $temp->isDot() ) {
 			
-			echo "Processing directory: " . $path->getPathname() . PHP_EOL;
-
-			$isExit73 = readline("Line 77 if (\$temp->isDir() && \$temp->isDot() ) path: {$path}  {\$temp} Exit?");  // ERROR CHECKING OUTPUTS REMOVE LATER
-        if ($isExit73 === "y") {
-            exit("You have exited");
-        }
-        else {
-            echo "Moving on...";
-        }				
-														// ERROR CHECKING END
-			$read_path = $path->getPathname(); 
-
-			echo "Line 97 read_path: {$read_path}          ";
+			echo "Processing directory: " . $temp->getPathname() . PHP_EOL;
+			
+			$read_path = $path; 
+			
 			// remove the / and name the book from the subdirectory path
-			$book_title = $path;//$book_title = str_replace("/", "",strrchr($path, "/"));
+			$book_title = str_replace("/", "",strrchr($read_path, "/"));
 			echo "Book title: {$book_title}" . PHP_EOL;
-
-			$isExit76 = readline("Line 95 Book Title : {$book_title} ... Read Path: {$read_path} Exit?");  // ERROR CHECKING OUTPUTS REMOVE LATER
-			if ($isExit76 === "y") {
-				exit("You have exited");
-			}
-			else {
-				echo "Moving on...";
-			}																						// ERROR CHECKING END
+		   
 		   // Create book
 			try {
 				$book_id = $europa->create_book($book_title);
-				$nothing1 = readline("book_id: {$book_id}      book_title: {$book_title}");
 			} catch (Exception $e) {
 				echo "Error: " . $e->getMessage() . PHP_EOL;
 			}
@@ -124,24 +80,15 @@ foreach ($iterator as $path) {
 				$book_ids[] = $book_id;
 				
 				// Load files from directory
-				$nothing2 = readline(" line 125 read_path: {$read_path}        ");
 				$iteratorBook = new DirectoryIterator($read_path); 
 
 				// Iterate over files
 				foreach ($iteratorBook as $fileinfo) {
 					
-					$isExit123 = readline("Line 121 foreach (\$iteratorBook asn \$fileinfo) : {$fileinfo} ... Exit?");  // ERROR CHECKING OUTPUTS REMOVE LATER
-					if ($isExit123 === "y") {
-						exit("You have exited");
-					}
-					else {
-						echo "Moving on...";
-					}																						// ERROR CHECKING END
-
-					//if file is NOT a . or .. 
-					if (!$fileinfo->isDot() && !$fileinfo->isDir()) {
+					//if file is NOT a folder
+					if (!$fileinfo->isDot()) {
 						$file_name = $fileinfo->getFilename();
-                        echo "line 134 \$file_name = \$fileinfo->getFilename(); : file_name = {$file_name}";
+
 						// Only handle files that end with .html extension
 						if ($europa->ends_with($file_name, ".html")) {
 							$title = str_replace(array("-", "_"), " ", $file_name);
@@ -157,7 +104,6 @@ foreach ($iterator as $path) {
 
 									// Remove numbers at the end of the title
 									$title = preg_replace('/\d+$/', '', $title);
-                                    
 								}
 							} 
 							
@@ -185,7 +131,6 @@ foreach ($iterator as $path) {
 
 							// Build a payload to create a page
 							// Can apply multiple tags by adding to 2d Array
-							
 							$payload = array(
 								"book_id" => $book_id,
 								"name" => $title,
@@ -196,7 +141,7 @@ foreach ($iterator as $path) {
 									"value" => (string)$confluence_page_id
 									)
 								)
-							); 
+							);
 /* Example of API call to affix tags at book creation. Only 'name' is neccessary to add
 just nest additional array's within the top level 
                         "tags": [
@@ -217,17 +162,14 @@ just nest additional array's within the top level
             }            
         }
 		// Pause after each iteration through loop
-		echo " line 210 path: {$path}            ";
-        $isExit183 = readline("Line 184 Do you want to exit? (y): ");			// ERROR CHECKING OUTPUTS REMOVE LATER
-		if ($isExit183 === "y") {
-        if ($isExit183 === "y") {
+        $isExit = readline("Do you want to exit? (Y) or (any key) then press 'Enter': ");
+        if ($isExit === "Y") {
             exit("You have exited");
         }
         else {
-            echo "Next Iteration...";
-        }																// ERROR CHECKING END
+            echo "Moving on to next book...";
+        }
     }
-}
 
 // Finish shelf creation
 $shelf_id = $europa->create_shelf($shelf_name);

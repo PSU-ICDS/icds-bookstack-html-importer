@@ -293,105 +293,6 @@ class BookStack_Client {
 		return false;
 	}
 
-	/** Get Directory Structure should return books, chapters, pages based upon directory structure......
-	 * 
-	 */
-function get_directory_structure($directory)
-{
-    $structure = array();
-
-    $iterator = new RecursiveIteratorIterator(
-        new RecursiveDirectoryIterator($directory),
-        RecursiveIteratorIterator::SELF_FIRST
-    );
-
-    foreach ($iterator as $path) {
-        if ($path->isDir()) {
-            $structure[$path->getBasename()] = array();
-        } else {
-            $parts = explode(DIRECTORY_SEPARATOR, $path->getPath());
-            $parent = &$structure;
-            foreach ($parts as $part) {
-                if (!isset($parent[$part])) {
-                    $parent[$part] = array();
-                }
-                $parent = &$parent[$part];
-            }
-            $parent[] = $path->getBasename();
-        }
-    }
-
-    return $structure;
-}
-
-	/** Kenny's Addition "Create Shelf"
-	 * Creates a new book if it does not exists.
-	 * $check_existing Default: true. When true checks if there is an existing book with the same name and returns
-	 * that books ID, when false creates a new book regardless
-	 *
-	 * @param $shelf_title
-	 * @param $check_existing
-	 *
-	 * @return false|mixed
-	 */
-
-	function create_shelf( $shelf_title, $check_existing = true ) {
-		$shelf_id = false;
-
-		# Check books if required (default)
-		if ( is_bool( $check_existing ) && $check_existing ) {
-			$shelves = $this->get_shelves( array() );
-
-			if ( $shelves ) {
-				foreach ( $shelves as $shelf ) {
-					$this->log( $shelf->name );
-					//continue;
-					if ( $shelf->name === $shelf_title ) {
-						$book_id = $shelf->id;
-						$this->log( "Shelf exists with ID: {$shelf_id}" );
-
-						return $shelf_id;
-					}
-				}
-			}
-		}
-
-		# No shelf was found create one
-		if ( $shelf_id === false ) {
-			# Shelf doesn't exists so create it
-			$payload  = array(
-				"name"        => "{$shelf_title}",
-				"description" => "" // Perhaps add auto description from DOM later
-			);
-			$new_shelf = $this->post( "{$this->url}shelves", $payload );
-			if ( isset( $new_shelf ) ) {
-				$new_shelf = json_decode( $new_shelf );
-				if ( isset( $new_shelf->id ) ) {
-					$shelf_id = $new_shelf->id;
-					$this->log( "Created Shelf with ID: {$shelf_id}" );
-				}
-			}
-		}
-
-		// Recent addition to perhaps add books to created shelf...maybe wont use
-		/*
-		if ($shelf_id && !empty($book_ids)) {
-			// Update the shelf's books property
-			$update_payload = array(
-				"books" => $book_ids
-			);
-	
-			// Make a PUT request to update the shelf's properties
-			$update_shelf = $this->put("{$this->url}shelves/{$shelf_id}", $update_payload);
-	
-			if (isset($update_shelf)) {
-				$this->log("Updated Shelf with ID: {$shelf_id}");
-			}
-		}
-		*/
-		return $shelf_id;
-	}
-
 	/**
 	 * Creates a new book if it does not exists.
 	 * $check_existing Default: true. When true checks if there is an existing book with the same name and returns
@@ -450,7 +351,6 @@ function get_directory_structure($directory)
 	 *
 	 * @return false
 	 */
-	
 	function create_page( $payload ) {
 		// Must be an array and have the 3 keys
 		if (
@@ -474,36 +374,6 @@ function get_directory_structure($directory)
 
 		return false;
 	}
-
-/*
-function create_page($payload) {  // , $tags = array()
-    // Must be an array and have the required keys
-    if (
-        is_array($payload)
-        && isset($payload['book_id'])
-        && isset($payload['name'])
-        && isset($payload['html'])
-		// isset($payload['tags'])
-    ) {
-        // Add tags to the payload
-        //$payload['tags'] = $tags;
-
-        $page = $this->post("{$this->url}pages", $payload);
-
-        if (isset($page)) {
-            $page = json_decode($page);
-            if (isset($page->data)) {
-                $page = $page->data;
-                $this->log($page);
-
-                return $page;
-            }
-        }
-    }
-
-    return false;
-}
-*/
 
 	function starts_with( $haystack, $needle ) {
 		$length = strlen( $needle );
