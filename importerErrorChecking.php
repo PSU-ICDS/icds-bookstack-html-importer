@@ -328,30 +328,19 @@ class BookStack_Client {
      *
      * @return bool|string Returns true on successful deletion, or an error message on failure.
      */
-    function delete_book($bookId) {
-		if (!is_numeric($bookId)) {
-			return "Invalid book ID.";
-		}
-	
-		$url = "{$this->url}books/{$bookId}";
-		$curl = curl_init();
-	
-		// Set options for the DELETE request
-		curl_setopt($curl, CURLOPT_URL, $url);
-		curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'DELETE');
-		$this->basic_auth(); // Add authorization headers
-		curl_setopt($curl, CURLOPT_HTTPHEADER, $this->headers); // Set the headers
-	
-		$response = curl_exec($curl);
-	
-		curl_close($curl);
-	
-		if ($response === "204 No Content") {
-			return true;
-		} else {
-			return "Failed to delete the book: {$response}";
-		}
-	}
+	function delete_book($bookId) {
+        if (!is_numeric($bookId)) {
+            return "Invalid book ID.";
+        }
+
+        $response = $this->delete("{$this->url}books/{$bookId}");
+
+        if ($response === "204 No Content") {
+            return true;
+        } else {
+            return "Failed to delete the book: {$response}";
+        }
+    }
 
 	/** Get Directory Structure should return books, chapters, pages based upon directory structure......
 	 * 

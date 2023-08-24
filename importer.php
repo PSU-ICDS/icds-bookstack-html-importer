@@ -15,9 +15,8 @@ under Bookstacks maximum allowed calls per minute of 500. In a new Instance of B
 you will need to adjust the API call speed in Bookstack's .env file OR slow the speed of
 uploads down to 333333 (180 calls a minute) from 111111 (480 calls a minute).
 
-***Note: as of this time a book by the name of "." will be created, I have filtered
-out the "..". Simply delete the book after ALL exports and should only need to be done
-once.
+***Note: as of this time a book by the name of "." as well as a ".." and perhaps the shelf itself. This will 
+be cleaned up after import. Unless I have time to fiddle with them script some more.
 
 */
 require_once('../bookstack_client.php');
@@ -29,7 +28,7 @@ if (!isset($credentials)) {
 }
 
 // API call speed in microseconds (default of 111111 is about 480 calls per minute)
-$api_call_speed = 0; // (333333 is about 180 calls per minute which is Bookstack Default)
+$api_call_speed = 111111; // (333333 is about 180 calls per minute which is Bookstack Default)
 
 //Array to store book id's to be added to Shelf after all imports take place
 $book_ids = array(); 
@@ -39,8 +38,8 @@ $temp_title;
 $europa = new BookStack_Client($credentials['url'], $credentials['id'], $credentials['secret'], true); // needs to be in scope
 
 // Specify the root directory you want to start iterating from
-//$root_directory = readline("Enter path to shelf imports: ");
-$root_directory = "/home/kenny/test";
+$root_directory = readline("Enter path to shelf imports: ");
+//$root_directory = "/home/kenny/test";
 
 // Create a shelf beforehand; finish after iterations
 $shelf_name = readline("Enter a shelf name: ");
@@ -52,7 +51,10 @@ $iterator = new DirectoryIterator($root_directory);
 // Iterate through directories from specified root directory;
 //	creating books where applicable.
 foreach ($iterator as $path) {
+
+/* Uncomment to add Error Checking
 	echo "Iterator : {$iterator}";
+
     $isExit56 = readline("Line 54 foreach (\$iterator as \$path) : {$path} Exit?");  // ERROR CHECKING OUTPUTS REMOVE LATER
         if ($isExit56 === "y") {
             exit("You have exited");
@@ -60,20 +62,17 @@ foreach ($iterator as $path) {
         else {
             echo "Moving on...";
         }																			// ERROR CHECKING END
+*/
 
 	// create $temp to hold $path because you cannot use isDOT() on RecursiveDirectoryIterator
 	// so it must temporarily become Directory Iterator to pass thru if statement
 	echo "Var Dump: Path ---     ";
 	var_dump($path);
 
-	//$temp = new DirectoryIterator($path);
-
-	echo "Var Dump: TEMP ---     ";
-	//var_dump($temp);
-	
+/* Uncomment to add Error Checking	
 	$nothing = readline("Line 66 \$path = new DirectoryIterator(\$path) : {$path}    temp: {\$temp} Exit?");
 	
-	/*
+	
 	$isExit60 = readline("Line 66 \$temp = new DirectoryIterator(\$path) : {$temp} Exit?");  // ERROR CHECKING OUTPUTS REMOVE LATER
         if ($isExit60 === "y") {
             exit("You have exited");
@@ -86,7 +85,7 @@ foreach ($iterator as $path) {
 		if ($path->isDir() && !$path->isDot() ) {
 			
 			echo "Processing directory: " . $path->getPathname() . PHP_EOL;
-
+/* Uncomment to add Error Checking
 			$isExit73 = readline("Line 77 if (\$temp->isDir() && \$temp->isDot() ) path: {$path}  {\$temp} Exit?");  // ERROR CHECKING OUTPUTS REMOVE LATER
         if ($isExit73 === "y") {
             exit("You have exited");
@@ -94,25 +93,27 @@ foreach ($iterator as $path) {
         else {
             echo "Moving on...";
         }				
-														// ERROR CHECKING END
+*/											// ERROR CHECKING END
 			$read_path = $path->getPathname(); 
 
 			echo "Line 97 read_path: {$read_path}          ";
-			// remove the / and name the book from the subdirectory path
-			$book_title = $path;//$book_title = str_replace("/", "",strrchr($path, "/"));
-			echo "Book title: {$book_title}" . PHP_EOL;
+			// remove the _ and name the book from the subdirectory path
 
+			$book_title = str_replace("_", " ", $path);
+			echo "Book title: {$book_title}" . PHP_EOL;
+/* Uncomment to add Error Checking
 			$isExit76 = readline("Line 95 Book Title : {$book_title} ... Read Path: {$read_path} Exit?");  // ERROR CHECKING OUTPUTS REMOVE LATER
 			if ($isExit76 === "y") {
 				exit("You have exited");
 			}
 			else {
 				echo "Moving on...";
-			}																						// ERROR CHECKING END
+			}	
+*/																								// ERROR CHECKING END
 		   // Create book
 			try {
 				$book_id = $europa->create_book($book_title);
-				$nothing1 = readline("book_id: {$book_id}      book_title: {$book_title}");
+// Uncomment for error checking				$nothing1 = readline("book_id: {$book_id}      book_title: {$book_title}");
 			} catch (Exception $e) {
 				echo "Error: " . $e->getMessage() . PHP_EOL;
 			}
@@ -124,12 +125,12 @@ foreach ($iterator as $path) {
 				$book_ids[] = $book_id;
 				
 				// Load files from directory
-				$nothing2 = readline(" line 125 read_path: {$read_path}        ");
+// Uncomment for error checking				$nothing2 = readline(" line 125 read_path: {$read_path}        ");
 				$iteratorBook = new DirectoryIterator($read_path); 
 
 				// Iterate over files
 				foreach ($iteratorBook as $fileinfo) {
-					
+/* Uncomment for error checking					
 					$isExit123 = readline("Line 121 foreach (\$iteratorBook asn \$fileinfo) : {$fileinfo} ... Exit?");  // ERROR CHECKING OUTPUTS REMOVE LATER
 					if ($isExit123 === "y") {
 						exit("You have exited");
@@ -137,7 +138,7 @@ foreach ($iterator as $path) {
 					else {
 						echo "Moving on...";
 					}																						// ERROR CHECKING END
-
+*/
 					//if file is NOT a . or .. 
 					if (!$fileinfo->isDot() && !$fileinfo->isDir()) {
 						$file_name = $fileinfo->getFilename();
@@ -179,7 +180,7 @@ foreach ($iterator as $path) {
 							}
 						}
 
-						    //var_dump(
+// Uncomment to provide more output (too much)						    //var_dump(
 						    //   array($title, $book_id)
 						    //);
 
@@ -216,16 +217,16 @@ just nest additional array's within the top level
                 }
             }            
         }
+/* Uncomment for error checking
 		// Pause after each iteration through loop
 		echo " line 210 path: {$path}            ";
         $isExit183 = readline("Line 184 Do you want to exit? (y): ");			// ERROR CHECKING OUTPUTS REMOVE LATER
-		if ($isExit183 === "y") {
         if ($isExit183 === "y") {
             exit("You have exited");
         }
         else {
             echo "Next Iteration...";
-        }																// ERROR CHECKING END
+        }		*/													// ERROR CHECKING END
     }
 }
 
