@@ -213,10 +213,10 @@ just nest additional array's within the top level
 						// calls per minute to ensure everything uploaded. Check for error Code 429 
 						// in output to see if calls per minute exceeded during Book/Page creation
                         usleep($api_call_speed);
-                    }
                 }
-            }            
-        }
+            }
+        }            
+    }
 /* Uncomment for error checking
 		// Pause after each iteration through loop
 		echo " line 210 path: {$path}            ";
@@ -227,8 +227,8 @@ just nest additional array's within the top level
         else {
             echo "Next Iteration...";
         }		*/													// ERROR CHECKING END
-    }
 }
+
 
 // Finish shelf creation
 $shelf_id = $europa->create_shelf($shelf_name);
