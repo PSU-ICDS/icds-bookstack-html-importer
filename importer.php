@@ -143,6 +143,8 @@ foreach ($iterator as $path) {
 					if (!$fileinfo->isDot() && !$fileinfo->isDir()) {
 						$file_name = $fileinfo->getFilename();
                         echo "line 134 \$file_name = \$fileinfo->getFilename(); : file_name = {$file_name}";
+
+
 						// Only handle files that end with .html extension
 						if ($europa->ends_with($file_name, ".html")) {
 							$title = str_replace(array("-", "_"), " ", $file_name);
