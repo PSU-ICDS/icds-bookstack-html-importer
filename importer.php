@@ -39,7 +39,6 @@ $europa = new BookStack_Client($credentials['url'], $credentials['id'], $credent
 
 // Specify the root directory you want to start iterating from
 $root_directory = readline("Enter path to shelf imports: ");
-//$root_directory = "/home/kenny/test";
 
 // Create a shelf beforehand; finish after iterations
 $shelf_name = readline("Enter a shelf name: ");
@@ -253,3 +252,4 @@ if ($shelf_id) {
     
     
 
+  
