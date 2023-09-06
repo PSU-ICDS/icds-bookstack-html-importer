@@ -1,0 +1,22 @@
+// DELETE A BOOK : Needs a Book ID : to find use http://{Bookstack_IP}/api/books to list books //
+// removed Bookstack IP from this for security...
+
+const bookId = ; // Replace with the desired book ID
+
+fetch(`http://{Bookstack_IP}/api/books/${bookId}`, {
+  method: 'DELETE',
+  headers: {
+    'Content-Type': 'application/json', // You may need to adjust the content type if required
+    // Add any necessary authentication headers here if required
+  },
+})
+.then(response => {
+  if (response.ok) {
+    console.log(`Book with ID ${bookId} has been deleted successfully.`);
+  } else {
+    console.error(`Failed to delete book with ID ${bookId}.`);
+  }
+})
+.catch(error => {
+  console.error('An error occurred:', error);
+});
